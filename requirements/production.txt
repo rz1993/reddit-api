@@ -1,0 +1,10 @@
+flask
+flask-apispec
+Flask-Bcrypt
+Flask-CORS
+flask-jwt-extended
+Flask-Migrate
+Flask-SQLAlchemy
+gunicorn
+marshmallow
+psycopg2
