@@ -1,4 +1,3 @@
-dotenv
 flask
 flask-apispec
 Flask-Bcrypt
