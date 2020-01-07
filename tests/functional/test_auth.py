@@ -1,8 +1,6 @@
 """Test for authentication API (i.e. registration and logging in)"""
 
-
-def test_login(test_client, test_database):
-    test_data = test_database[1]
+def test_login(test_client, test_database, test_data):
     user1 = test_data['users'][0]
     user_data = {
         'username': user1.username,

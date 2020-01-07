@@ -20,8 +20,8 @@ def get_access_token(client, user):
     return payload['data']['access_token']
 
 
-def test_create_subreddit(test_client, test_database):
-    test_data = test_database[1]
+def test_create_subreddit(test_client, test_database, test_data):
+    #test_data = test_database[1]
     user1 = test_data['users'][0]
 
     access_token = get_access_token(test_client, user1)
@@ -37,6 +37,7 @@ def test_create_subreddit(test_client, test_database):
     payload = resp.get_json()
     assert payload['data']['subreddit']['name'] == sub_data['name']
     assert payload['data']['subreddit']['description'] == sub_data['description']
+    assert payload['data']['subreddit']['subscriber_count'] == 1
 
 
 def test_create_subreddit_no_auth(test_client, test_database):
