@@ -59,7 +59,7 @@ def register():
     user.save()
     user_data = user_schema.dump(user)
     return jsonify(
-        data=user_data,
+        data={'user': user_data},
         message="Registration successful.",
         status=201
-    )
+    ), 201

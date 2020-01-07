@@ -21,7 +21,7 @@ def get_subreddit(name):
 
     data = subreddit_schema.dump(subreddit)
     return jsonify(
-        data=data,
+        data={'subreddit': data},
         status=200
     )
 
@@ -40,11 +40,12 @@ def create_subreddit():
         raise InvalidUsage.validation_error()
     except exc.IntegrityError as ex:
         raise InvalidUsage.duplicate()
+    subreddit_data = subreddit_schema.dump(subreddit)
     return jsonify(
-        data=data,
+        data={'subreddit': subreddit_data},
         message='Subreddit created.',
         status=201
-    )
+    ), 201
 
 
 @bp_ss.route('', methods=['PUT'])
