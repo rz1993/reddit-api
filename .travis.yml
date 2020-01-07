@@ -10,5 +10,6 @@ before_script:
   - export FLASK_APP="$TRAVIS_BUILD_DIR/app.py"
   - export FLASK_DEBUG=1
   - export FLASK_ENV=development
+  - export APP_DATABASE_URI="sqlite:///$TRAVIS_BUILD_DIR/test.db"
 
 script: python -m pytest

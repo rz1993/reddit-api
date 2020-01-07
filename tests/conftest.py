@@ -9,10 +9,6 @@ from reddit import subreddits, threads, user, votes
 
 @pytest.fixture(scope='module')
 def test_client():
-    from dotenv import load_dotenv
-
-    load_dotenv('.env_test')
-
     app = create_app()
     test_client = app.test_client()
     ctx = app.app_context()
