@@ -1,10 +1,12 @@
-from reddit.database import CrudMixin
+from reddit.database import CrudMixin, SearchableMixin
 from reddit.extensions import db
 from datetime import datetime
 
 
-class Comment(db.Model, CrudMixin):
+class Comment(db.Model, CrudMixin, SearchableMixin):
     __tablename__ = "comment"
+
+    __searchable__ = ['body']
 
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.Text, nullable=False)
@@ -16,6 +18,8 @@ class Comment(db.Model, CrudMixin):
 
 class Thread(db.Model, CrudMixin):
     __tablename__ = "thread"
+
+    __searchable__ = ['title', 'description', 'body']
 
     id = db.Column(db.Integer, primary_key=True)
     slug = db.Column(db.String, nullable=False, unique=True)

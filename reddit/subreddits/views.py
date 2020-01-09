@@ -6,6 +6,7 @@ from reddit import __version__
 from reddit.errors import InvalidUsage
 from reddit.subreddits.serializers import subreddit_schema, subreddits_schema
 from reddit.subreddits.models import Subreddit
+from reddit.user.models import User
 from sqlalchemy import exc
 
 
@@ -22,6 +23,20 @@ def get_subreddit(name):
     data = subreddit_schema.dump(subreddit)
     return jsonify(
         data={'subreddit': data},
+        status=200
+    )
+
+
+@bp_sr.route('<string:name>/subscriptions', methods=['GET'])
+def get_subscribers(name):
+    subreddit = Subreddit.query.filter_by(name=name).first()
+    if not subreddit:
+        raise InvalidUsage.resource_not_found()
+
+    return jsonify(
+        data={'subscribers': [
+            user.username for user in subreddit.subscribers.all()
+        ]},
         status=200
     )
 
@@ -81,15 +96,10 @@ def unsubscribe(subreddit):
     return jsonify(message='Unsubscribed.', status=204)
 
 
-@bp_ss.route('subscriptions', methods=['GET'])
+@bp_ss.route('', methods=['GET'])
 @jwt_required
 def get_subscriptions():
-    subreddit = Subreddit.query.filter_by(name=name).first()
-    if not subreddit:
-        raise InvalidUsage.resource_not_found()
-
-    data = subreddit_schema.dump(subreddit_schema)
+    subscriptions = current_user.subscribed_subreddits.all()
     return jsonify(
-        data=data,
-        status=200
+        data={'subscriptions': [sub.name for sub in subscriptions]}
     )

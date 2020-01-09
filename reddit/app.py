@@ -1,5 +1,6 @@
+from elasticsearch import Elasticsearch
 from flask import Flask, jsonify
-from reddit import subreddits, threads, user, votes
+from reddit import feed, subreddits, threads, user, votes
 from reddit import commands
 from reddit.errors import InvalidUsage
 from reddit.extensions import bcrypt, cors, db, migrate
@@ -23,6 +24,7 @@ def register_extensions(app):
 
 
 def register_blueprints(app):
+    app.register_blueprint(feed.views.bp)
     app.register_blueprint(subreddits.views.bp_sr)
     app.register_blueprint(subreddits.views.bp_ss)
     app.register_blueprint(threads.views.bp)
@@ -72,5 +74,14 @@ def create_app():
     register_commands(app)
     register_errorhandler(app)
     register_extensions(app)
+    register_shellcontext(app)
 
+
+    app.elasticsearch = None
+    if app.config["ES_HOST"]:
+        app.elasticsearch = Elasticsearch(
+            app.config["ES_HOST"],
+            http_auth=(app.config["ES_USER"], app.config["ES_PASSWORD"])
+        )
+            
     return app

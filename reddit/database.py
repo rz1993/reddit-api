@@ -1,6 +1,8 @@
 from datetime import datetime
+from flask import current_app
 from reddit.errors import InvalidUsage
 from reddit.extensions import db
+from reddit.search import add_to_index, delete_from_index, search_index
 
 
 class CrudMixin(object):
@@ -31,3 +33,47 @@ class CrudMixin(object):
     def delete(self):
         db.session.delete(self)
         db.session.commit()
+
+
+class SearchableMixin(object):
+    """
+    Mixin to integrate Elasticsearch functionality with model data.
+    Elasticsearch returns a list of model id's, but we want to provide the actual models
+    the id's are associated with.
+    In order to keep elasticsearch indices in-sync with database state, use
+    SQLAlchemy events to trigger indexing and updates.
+    """
+    @classmethod
+    def search(cls, index, query, page=1):
+        page_size = current_app.config["ITEMS_PER_PAGE"]
+        ids, num_results = search_index(index, query, page, page_size)
+        models = cls.query.filter(cls.id.in_(ids)).all()
+        return models, num_results
+
+    @classmethod
+    def before_commit(cls, session):
+        session._changes = {
+            'add': list(session.new),
+            'update': list(session.dirty),
+            'deleted': list(session.deleted)
+        }
+
+    @classmethod
+    def after_commit(cls, session):
+        try:
+            for obj in session._changes['add']:
+                if isinstance(obj, SearchableMixin):
+                    add_to_index(cls.__tablename__, obj)
+            for obj in session._changes['deleted']:
+                if isinstance(obj, SearchableMixin):
+                    delete_from_index(cls.__tablename__, obj)
+            session._changes = None
+        except Exception as ex:
+            """
+            TODO: If fails, then queue this trigger somewhere and retry again.
+            """
+            raise ex
+
+
+db.event.listen(db.session, 'before_commit', SearchableMixin.before_commit)
+db.event.listen(db.session, 'after_commit', SearchableMixin.after_commit)
