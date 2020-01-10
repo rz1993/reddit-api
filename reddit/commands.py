@@ -1,5 +1,7 @@
 import click
 import os
+from flask import current_app
+from reddit.extensions import elasticsearch
 
 
 HERE = os.path.abspath(os.path.dirname(__file__))
@@ -28,3 +30,8 @@ def clean():
                 os.remove(full_pathname)
         if dirpath.endswith('__pycache__'):
             os.rmdir(dirpath)
+
+
+@click.command()
+def create_indexes():
+    elasticsearch.create_all()

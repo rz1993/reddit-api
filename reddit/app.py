@@ -1,15 +1,14 @@
-from elasticsearch import Elasticsearch
 from flask import Flask, jsonify
-from reddit import feed, subreddits, threads, user, votes
+from reddit import feed, search, subreddits, threads, user, votes
 from reddit import commands
 from reddit.errors import InvalidUsage
-from reddit.extensions import bcrypt, cors, db, migrate
+from reddit.extensions import bcrypt, cors, db, migrate, elasticsearch
 from reddit.jwt import jwt
+
+import os
 
 
 def configure(app):
-    import os
-
     env_type = os.getenv("FLASK_ENV", "development")
 
     app.config.from_object(f"config.{env_type.title()}")
@@ -22,9 +21,13 @@ def register_extensions(app):
     jwt.init_app(app)
     migrate.init_app(app, db)
 
+    # Custom search extension
+    elasticsearch.init_app(app)
+
 
 def register_blueprints(app):
     app.register_blueprint(feed.views.bp)
+    app.register_blueprint(search.views.bp)
     app.register_blueprint(subreddits.views.bp_sr)
     app.register_blueprint(subreddits.views.bp_ss)
     app.register_blueprint(threads.views.bp)
@@ -60,6 +63,7 @@ def register_shellcontext(app):
 def register_commands(app):
     app.cli.add_command(commands.clean)
     app.cli.add_command(commands.test)
+    app.cli.add_command(commands.create_indexes)
 
 
 def create_app():
@@ -76,12 +80,14 @@ def create_app():
     register_extensions(app)
     register_shellcontext(app)
 
+    print(os.environ['APP_DATABASE_URI'])
 
+    """
     app.elasticsearch = None
     if app.config["ES_HOST"]:
         app.elasticsearch = Elasticsearch(
             app.config["ES_HOST"],
             http_auth=(app.config["ES_USER"], app.config["ES_PASSWORD"])
         )
-            
+    """
     return app
