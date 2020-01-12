@@ -28,10 +28,12 @@ def register_extensions(app):
     jwt.init_app(app)
     migrate.init_app(app, db)
 
-    # Custom search extension
-    elasticsearch.init_app(app)
-    # Add events for syncing relational data with other data stores
-    register_events(db)
+    # Allow for disabling during test.
+    if app.config.get("ES_HOST"):
+        # Custom search extension
+        elasticsearch.init_app(app)
+        # Add events for syncing relational data with other data stores
+        register_events(db)
 
 
 def register_blueprints(app):
@@ -89,14 +91,4 @@ def create_app():
     register_extensions(app)
     register_shellcontext(app)
 
-    print(os.environ['APP_DATABASE_URI'])
-
-    """
-    app.elasticsearch = None
-    if app.config["ES_HOST"]:
-        app.elasticsearch = Elasticsearch(
-            app.config["ES_HOST"],
-            http_auth=(app.config["ES_USER"], app.config["ES_PASSWORD"])
-        )
-    """
     return app

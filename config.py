@@ -24,3 +24,5 @@ class Production(Base):
 class Testing(Base):
     SQLALCHEMY_DATABASE_URI = os.getenv('APP_DATABASE_URI', 'sqlite:///test.db')
     DEBUG                   = True
+
+    ES_HOST                 = None
