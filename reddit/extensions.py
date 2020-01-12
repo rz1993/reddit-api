@@ -10,12 +10,6 @@ migrate = Migrate()
 db = SQLAlchemy()
 
 # Custom extensions
-from reddit.search.models import Comment, Thread
-from reddit.search.extension import ElasticsearchSql
+from reddit.elasticsearch import ElasticsearchSql
 
 elasticsearch = ElasticsearchSql()
-
-from reddit.threads.models import Comment as CommentSql, Thread as ThreadSql
-
-elasticsearch.register_sql_model(CommentSql, Comment)
-elasticsearch.register_sql_model(ThreadSql, Thread)

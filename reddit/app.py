@@ -2,6 +2,7 @@ from flask import Flask, jsonify
 from reddit import feed, search, subreddits, threads, user, votes
 from reddit import commands
 from reddit.errors import InvalidUsage
+from reddit.events import EVENT_REGISTRY
 from reddit.extensions import bcrypt, cors, db, migrate, elasticsearch
 from reddit.jwt import jwt
 
@@ -14,6 +15,12 @@ def configure(app):
     app.config.from_object(f"config.{env_type.title()}")
 
 
+def register_events(db):
+    for event_type, listeners in EVENT_REGISTRY.items():
+        for listener in listeners:
+            db.event.listen(db.session, event_type, listener)
+
+
 def register_extensions(app):
     bcrypt.init_app(app)
     cors.init_app(app)
@@ -23,6 +30,8 @@ def register_extensions(app):
 
     # Custom search extension
     elasticsearch.init_app(app)
+    # Add events for syncing relational data with other data stores
+    register_events(db)
 
 
 def register_blueprints(app):

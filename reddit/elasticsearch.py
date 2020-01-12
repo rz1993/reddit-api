@@ -2,7 +2,7 @@
 
 from elasticsearch_dsl import Document
 from elasticsearch_dsl.connections import connections
-from reddit.search.models import Comment, Thread
+from reddit.extensions import db
 
 
 class ElasticsearchSql:
@@ -26,10 +26,10 @@ class ElasticsearchSql:
         """
 
     def register_sql_model(self, model_cls, index_cls):
-        if not isinstance(model_cls, db.Model):
-            raise ValueError("`model_cls` must be an instance of `FlaskSQLAlchemy.Model`")
-        if not isinstance(index_cls, Document):
-            raise ValueError("`index_cls` must be an instance of elasticsearch_dsl.Document")
+        if not issubclass(model_cls, db.Model):
+            raise ValueError("`model_cls` must be a subclass of `FlaskSQLAlchemy.Model`")
+        if not issubclass(index_cls, Document):
+            raise ValueError("`index_cls` must be a subclass of elasticsearch_dsl.Document")
 
         if not getattr(model_cls, '__searchable__', None):
             raise ValueError(f"{model_cls.__name__} does not have any searchable fields.")

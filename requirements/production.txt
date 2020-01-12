@@ -1,3 +1,5 @@
+elasticsearch
+elasticsearch-dsl
 flask
 flask-apispec
 Flask-Bcrypt
