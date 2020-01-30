@@ -66,7 +66,7 @@ def register_shellcontext(app):
             'User': user.models.User,
             'Thread': threads.models.Thread,
             'Comment': threads.models.Comment,
-            'Upvote': votes.models.Upvote
+            'Vote': votes.models.Vote
         }
     app.shell_context_processor(shell_context)
 
@@ -90,5 +90,7 @@ def create_app():
     register_errorhandler(app)
     register_extensions(app)
     register_shellcontext(app)
+
+    # print(app.config)
 
     return app

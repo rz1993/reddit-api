@@ -8,7 +8,6 @@ class CommentSchema(Schema):
     body = fields.Str()
     createdAt = fields.DateTime()
     updatedAt = fields.DateTime(dump_only=True)
-    author_id = fields.Int()
     author = fields.Nested(UserSchema(only=("id", "username")))
 
 
@@ -19,15 +18,17 @@ class CommentsSchema(CommentSchema):
 
 
 class ThreadSchema(Schema):
+    id = fields.Int()
     slug = fields.Str()
     createdAt = fields.DateTime()
-    updatedAt = fields.DateTime(dump_only=True)
-    author = fields.Nested(UserSchema(only=("id", "username")))
-    subreddit = fields.Nested(SubredditSchema(only=('name', 'description')))
+    updatedAt = fields.DateTime()
+    author = fields.Nested(UserSchema(only=("id", "username")), dump_only=True)
+    subreddit = fields.Function(lambda obj: obj.subreddit.name, dump_only=True)
     body = fields.Str()
     title = fields.Str(required=True)
     description = fields.Str(required=True)
-
+    numComments = fields.Int(attribute='num_comments')
+    score = fields.Int()
 
 class ThreadsSchema(ThreadSchema):
     @post_dump(pass_many=True)

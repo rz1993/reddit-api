@@ -59,7 +59,8 @@ def test_data(test_database):
     thread1 = threads.models.Thread(
         title='test_thread',
         description='A thread for testing',
-        author_id=user1.id
+        author_id=user1.id,
+        subreddit=sub1
     )
 
     data = {'users': [user1, user2],

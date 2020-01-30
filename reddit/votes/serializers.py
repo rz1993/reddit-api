@@ -6,6 +6,7 @@ class VoteSchema(Schema):
     voter_id = fields.Int()
     voted_thread_id = fields.Int()
     createdAt = fields.DateTime(dump_only=True)
+    direction = fields.Int()
 
 
 class UserVotesSchema(Schema):

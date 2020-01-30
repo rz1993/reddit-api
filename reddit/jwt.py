@@ -3,10 +3,14 @@ from flask_jwt_extended import JWTManager
 
 
 def jwt_identity(payload):
-    return User.query.get(payload)
+    id = payload['id']
+    return User.query.get(id)
 
 def identity_loader(user):
-    return user.id
+    return {
+        'id': user.id,
+        'username': user.username
+    }
 
 jwt = JWTManager()
 jwt.user_loader_callback_loader(jwt_identity)

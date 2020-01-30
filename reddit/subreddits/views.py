@@ -4,6 +4,8 @@ from flask_jwt_extended import current_user, jwt_required
 from marshmallow import fields, ValidationError
 from reddit import __version__
 from reddit.errors import InvalidUsage
+from reddit.threads.models import Thread
+from reddit.threads.serializers import threads_schema
 from reddit.subreddits.serializers import subreddit_schema, subreddits_schema
 from reddit.subreddits.models import Subreddit
 from reddit.user.models import User
@@ -21,11 +23,24 @@ def get_subreddit(name):
         raise InvalidUsage.resource_not_found()
 
     data = subreddit_schema.dump(subreddit)
+    threads = subreddit.threads.order_by(Thread.createdAt.desc()).all()
     return jsonify(
         data={'subreddit': data},
         status=200
     )
 
+@bp_sr.route('<string:name>/threads', methods=['GET'])
+def get_subreddit_threads(name):
+    subreddit = Subreddit.query.filter_by(name=name).first()
+    if not subreddit:
+        raise InvalidUsage.resource_not_found()
+
+    data = subreddit.threads.order_by(Thread.createdAt.desc()).all()
+    data = threads_schema.dump(data)
+    return jsonify(
+        data=data,
+        status=200
+    )
 
 @bp_sr.route('<string:name>/subscriptions', methods=['GET'])
 def get_subscribers(name):

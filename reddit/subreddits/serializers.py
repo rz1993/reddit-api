@@ -1,4 +1,4 @@
-from marshmallow import Schema, fields, post_dump
+from marshmallow import Schema, fields, pre_dump, post_dump
 from reddit.user.serializers import UserSchema
 
 

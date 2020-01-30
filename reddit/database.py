@@ -1,5 +1,6 @@
 from datetime import datetime
 from flask import current_app
+from flask_jwt_extended import current_user
 from reddit.errors import InvalidUsage
 from reddit.extensions import db
 
@@ -19,9 +20,10 @@ class CrudMixin(object):
             raise InvalidUsage.resource_not_found()
         return obj
 
-    def save(self):
+    def save(self, commit=True):
         db.session.add(self)
-        db.session.commit()
+        if commit:
+            db.session.commit()
 
     def update(self, **kwargs):
         if kwargs:
@@ -29,6 +31,33 @@ class CrudMixin(object):
                 setattr(self, key, value)
             self.updatedAt = datetime.utcnow()
 
-    def delete(self):
+    def delete(self, commit=True):
         db.session.delete(self)
-        db.session.commit()
+        if commit:
+            db.session.commit()
+
+
+class VotableMixin(object):
+    """
+    TODO:
+        - use vote table to create and add vote (somehow avoid circular imports)
+        - optionally implement has_voted property given a current user
+        - Simply voting API, should just allow POST, UPDATE, DELETE
+    """
+    score = db.Column(db.Integer, default=0)
+
+    def add_vote(self, vote):
+        direction = 1 if vote.direction else -1
+        self.score += direction
+
+    def update_vote(self, old_vote):
+        update_score = -2 if old_vote.direction else 2
+        self.score += update_score
+
+    def delete_vote(self, vote):
+        update_score = -1 if vote.direction else 1
+        self.score += update_score
+
+    @property
+    def has_voted(self):
+        return current_user

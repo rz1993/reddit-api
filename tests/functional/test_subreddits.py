@@ -14,10 +14,10 @@ def get_access_token(client, user):
         raise ValueError('Could not authenticate')
 
     payload = resp.get_json()
-    if 'data' not in payload or 'access_token' not in payload['data']:
+    if 'data' not in payload or 'token' not in payload['data']:
         raise ValueError('Could not authenticate')
 
-    return payload['data']['access_token']
+    return payload['data']['token']
 
 
 def test_create_subreddit(test_client, test_database, test_data):

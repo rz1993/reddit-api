@@ -31,7 +31,7 @@ def login():
     return jsonify(
         status=200,
         message='Success',
-        data={'access_token': access_token}
+        data={'token': access_token}
     ), 200
 
 
@@ -58,8 +58,9 @@ def register():
     user = User(**data)
     user.save()
     user_data = user_schema.dump(user)
+    access_token = create_access_token(user)
     return jsonify(
-        data={'user': user_data},
+        data={'token': access_token},
         message="Registration successful.",
         status=201
     ), 201
