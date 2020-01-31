@@ -72,7 +72,7 @@ def create_subreddit():
         raise InvalidUsage.duplicate()
     subreddit_data = subreddit_schema.dump(subreddit)
     return jsonify(
-        data={'subreddit': subreddit_data},
+        data=subreddit_data,
         message='Subreddit created.',
         status=201
     ), 201
