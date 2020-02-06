@@ -1,11 +1,23 @@
 from flask import jsonify
 from functools import wraps
 from reddit.errors import InvalidUsage
+from reddit.logging import logger
 
-
+import time
 """
 Decorators
 """
+
+
+def with_time_logger(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        start = time.time()
+        result = f(*args, **kwargs)
+        logger.info(f'{f.__name__} took {time.time()-start} seconds.')
+        return result
+    return decorated
+
 
 def with_resource(model, field, primary_key=False):
     def decorator(f):

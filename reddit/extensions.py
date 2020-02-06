@@ -9,7 +9,13 @@ cors = CORS()
 migrate = Migrate()
 db = SQLAlchemy()
 
+import redis
+
+cache = redis.Redis(host='localhost', port='6379')
+
 # Custom extensions
 from reddit.elasticsearch import ElasticsearchSql
+from reddit.events import EventProcessor
 
 elasticsearch = ElasticsearchSql()
+event_processor = EventProcessor()

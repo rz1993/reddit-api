@@ -11,6 +11,8 @@ from reddit import subreddits, threads, user, votes
 
 @pytest.fixture(scope='session')
 def test_client(request):
+    os.environ['FLASK_ENV'] = 'testing'
+
     app = create_app()
     test_client = app.test_client()
     ctx = app.app_context()

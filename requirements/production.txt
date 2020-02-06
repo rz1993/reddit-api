@@ -1,3 +1,4 @@
+blinker
 elasticsearch
 elasticsearch-dsl
 flask
@@ -10,3 +11,4 @@ Flask-SQLAlchemy
 gunicorn
 marshmallow
 psycopg2
+redis

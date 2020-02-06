@@ -30,6 +30,7 @@ class ThreadSchema(Schema):
     numComments = fields.Int(attribute='num_comments')
     score = fields.Int()
 
+
 class ThreadsSchema(ThreadSchema):
     @post_dump(pass_many=True)
     def make_threads(self, data, many, **kwargs):

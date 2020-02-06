@@ -5,6 +5,9 @@ from elasticsearch_dsl.connections import connections
 from reddit.extensions import db
 
 
+# TODO: Figure out how to properly handle events
+# NOTE: Current approach resulted in circular import
+
 class ElasticsearchSql:
     __table_to_index__ = {}
 
@@ -78,3 +81,24 @@ class ElasticsearchSql:
         document = self.map_to_document(model_obj)
         document.delete()
         return True
+
+
+def after_commit_sync_es(session):
+    for obj in session._changes['add']:
+        if elasticsearch.is_searchable(obj):
+            elasticsearch.add_document(obj)
+
+    for obj in session._changes['update']:
+        if elasticsearch.is_searchable(obj):
+            elasticsearch.update_document(obj)
+
+    for obj in session._changes['delete']:
+        if elasticsearch.is_searchable(obj):
+            elasticsearch.delete_document(obj)
+
+    session._changes = None
+
+
+EVENT_REGISTRY = {
+    'after_commit': [after_commit_sync_es]
+}

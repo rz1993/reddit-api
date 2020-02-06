@@ -61,3 +61,14 @@ class VotableMixin(object):
     @property
     def has_voted(self):
         return current_user
+
+# Enable events to differentiate new, dirty and deleted models
+
+def before_commit(session):
+    session._changes = {
+        'add': list(session.new),
+        'update': list(session.dirty),
+        'delete': list(session.deleted)
+    }
+
+db.event.listen(db.session, 'before_commit', before_commit)
