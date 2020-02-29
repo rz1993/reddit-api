@@ -1,7 +1,11 @@
 import click
 import os
 from flask import current_app
+from flask.cli import AppGroup, with_appcontext
 from reddit.extensions import elasticsearch
+from reddit.jobs.comments import CommentConsumer
+from reddit.jobs.threads import ThreadConsumer
+from reddit.jobs.votes import VoteConsumer
 
 
 HERE = os.path.abspath(os.path.dirname(__file__))
@@ -35,3 +39,18 @@ def clean():
 @click.command()
 def create_indexes():
     elasticsearch.create_all()
+
+
+@click.command()
+@click.argument('type')
+@with_appcontext
+def run_consumer(type):
+    if type == "vote":
+        cls = VoteConsumer
+    elif type == "thread":
+        cls = ThreadConsumer
+    elif type == "comment":
+        cls = CommentConsumer
+
+    consumer = cls(current_app)
+    consumer.start()

@@ -50,6 +50,11 @@ class Vote(db.Model):
         return vote
 
     @classmethod
+    def has_voted(cls, objects, user):
+        object_ids = [o['id'] for o in objects]
+        raise NotImplementedError()
+
+    @classmethod
     def count_votes(cls, thread_id):
         """
         SELECT DIRECTION, COUNT(id)

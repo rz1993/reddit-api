@@ -1,15 +1,18 @@
 from flask import Flask, jsonify
-from reddit import feed, search, subreddits, threads, user, votes
+from reddit import listing, search, subreddits, threads, user, votes
 from reddit import commands
 from reddit.errors import InvalidUsage
 from reddit.extensions import (
     bcrypt,
+    list_cache,
+    cache,
     cors,
     db,
     migrate,
     elasticsearch,
-    event_processor
+    event_publisher
 )
+from reddit.events import EventPublisher, Event, EventConsumer
 from reddit.jwt import jwt
 
 import os
@@ -23,23 +26,25 @@ def configure(app):
 
 def register_extensions(app):
     bcrypt.init_app(app)
+    list_cache.init_app(app)
+    cache.init_app(app)
     cors.init_app(app)
     db.init_app(app)
     jwt.init_app(app)
     migrate.init_app(app, db)
-    event_processor.init_app(app, db)
+    event_publisher.init_app(app)
 
     # Allow for disabling during test.
-    if app.config.get("ES_HOST"):
+    if app.config.get('ES_ENABLED') and app.config.get("ES_HOST"):
         # Custom search extension
         elasticsearch.init_app(app)
         # Add events for syncing relational data with other data stores
-        register_es_events(db)
+        #register_es_events(db)
 
 
 def register_blueprints(app):
-    app.register_blueprint(feed.views.bp)
     app.register_blueprint(search.views.bp)
+    app.register_blueprint(listing.views.bp)
     app.register_blueprint(subreddits.views.bp_sr)
     app.register_blueprint(subreddits.views.bp_ss)
     app.register_blueprint(threads.views.bp)
@@ -76,7 +81,7 @@ def register_commands(app):
     app.cli.add_command(commands.clean)
     app.cli.add_command(commands.test)
     app.cli.add_command(commands.create_indexes)
-
+    app.cli.add_command(commands.run_consumer)
 
 def create_app():
     app = Flask(__name__)
@@ -91,7 +96,5 @@ def create_app():
     register_errorhandler(app)
     register_extensions(app)
     register_shellcontext(app)
-
-    # print(app.config)
 
     return app

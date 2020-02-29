@@ -50,11 +50,10 @@ def get_subscribers(name):
 
     return jsonify(
         data={'subscribers': [
-            user.username for user in subreddit.subscribers.all()
+            user.username for user in subreddit.subscribers
         ]},
         status=200
     )
-
 
 @bp_sr.route('', methods=['POST'])
 @jwt_required

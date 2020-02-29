@@ -1,5 +1,6 @@
 from flask import Blueprint, current_app, jsonify, request, url_for
 from flask_jwt_extended import current_user, jwt_optional, get_jwt_identity
+from reddit.listing.models import SubredditListing, UserFeedListing
 from reddit.subreddits.models import Subreddit, subscriptions
 from reddit.threads.models import Thread
 from reddit.threads.serializers import threads_schema
@@ -7,8 +8,9 @@ from reddit.user.models import User
 from reddit.utilities import with_time_logger
 
 
-bp = Blueprint('feed', __name__, url_prefix="/api/v1/feed")
+bp = Blueprint('listing', __name__, url_prefix="/api/v1/listing")
 
+# TODO: implement apis for getting listings for subreddit and user_feed
 
 def create_feed(user_id, page=1):
     """
@@ -33,6 +35,21 @@ def create_generic_feed(page=1):
         paginate(page=page, per_page=page_size, error_out=False)
     return feed
 
+@bp.route('/<int:subreddit_id>', methods=['GET'])
+def get_sr_listing(subreddit_id):
+    listing = SubredditListing.get(subreddit_id)
+    return jsonify(
+        data=listing.items,
+        status=200
+    )
+
+@bp.route('/user/<int:user_id>', methods=['GET'])
+def get_user_listing(user_id):
+    listing = UserFeedListing.get(user_id)
+    return jsonify(
+        data=listing.items,
+        status=200
+    )
 
 @bp.route('', methods=['GET'])
 @jwt_optional

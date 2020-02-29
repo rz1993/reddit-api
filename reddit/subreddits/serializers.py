@@ -3,6 +3,7 @@ from reddit.user.serializers import UserSchema
 
 
 class SubredditSchema(Schema):
+    id = fields.Int()
     name = fields.Str(required=True)
     description = fields.Str(required=True)
     createdAt = fields.Str(dump_only=True)

@@ -51,21 +51,21 @@ def parse_comment():
     return data
 
 @bp.route("/<int:id>", methods=["GET"])
-@marshal_with(thread_schema)
 def get_thread(id):
     thread = Thread.get_or_404(id)
-    return thread
+    return jsonify(data=thread, status=200)
 
 @bp.route("/<int:id>", methods=["PUT"])
 @jwt_required
 def update_thread(id):
-    thread = Thread.get_or_404(id)
+    thread = Thread.get_from_db(id, strict=True)
     if current_user.id != thread.author_id:
         raise InvalidUsage.unauthorized()
 
     data = parse_thread()
     thread.update(**data)
     thread.save()
+    thread.emit_update_event()
 
     return jsonify(
         message='Update successful',
@@ -75,11 +75,14 @@ def update_thread(id):
 @bp.route("/<int:id>", methods=["DELETE"])
 @jwt_required
 def delete_thread(id):
-    thread = Thread.get_or_404(id)
+    thread = Thread.get_from_db(id, strict=True)
     if current_user.id != thread.author_id:
         raise InvalidUsage.unauthorized()
 
+    timestamp = datetime.utcnow()
     thread.delete()
+    thread.invalidate_cache()
+    thread.emit_delete_event(timestamp)
     return jsonify(
         message='Delete successful',
         status=204
@@ -93,6 +96,8 @@ def create_thread():
     data["author_id"] = current_user.id
     thread = Thread(**data)
     thread.save()
+    thread.write_to_cache()
+    thread.emit_create_event()
     return thread
 
 """
@@ -102,9 +107,8 @@ COMMENTS
 @bp.route("/<int:id>/comments", methods=["GET"])
 @marshal_with(comments_schema)
 def get_comments(id):
-    thread = Thread.get_or_404(id)
-    return thread.comments
-
+    comments = Comment.query.filter_by(thread_id=id).all()
+    return comments
 
 @bp.route("/<int:id>/comments", methods=["POST"])
 @marshal_with(comment_schema, code=201)
@@ -112,10 +116,6 @@ def get_comments(id):
 def create_comment(id):
     thread = Thread.get_or_404(id)
     data = parse_comment()
-    #data["thread_id"] = id
-    #data["author_id"] = current_user.id
-    #comment = Comment(**data)
-    #comment.save()
     comment = thread.add_comment(author=current_user, **data)
     return comment
 

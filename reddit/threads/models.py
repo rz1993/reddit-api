@@ -1,5 +1,6 @@
 from reddit.database import CrudMixin, VotableMixin
 from reddit.extensions import db
+from reddit.threads.serializers import comment_schema, thread_schema
 from datetime import datetime
 
 
@@ -7,6 +8,8 @@ class Comment(db.Model, CrudMixin, VotableMixin):
     __tablename__ = "comment"
 
     __searchable__ = ['body', 'author_id']
+
+    _serializer = comment_schema
 
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.Text, nullable=False)
@@ -21,16 +24,17 @@ class Thread(db.Model, CrudMixin, VotableMixin):
 
     __searchable__ = ['title', 'description', 'body', 'author_id', 'subreddit_id']
 
+    _serializer = thread_schema
+
     id = db.Column(db.Integer, primary_key=True)
     slug = db.Column(db.String, nullable=False, unique=True)
     title = db.Column(db.String, nullable=False)
     description = db.Column(db.Text, nullable=False)
-    body = db.Column(db.Text)
+    #body = db.Column(db.Text)
     #content_type = db.Column(db.Enum)
     author_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     author = db.relationship("User", backref="threads")
     num_comments = db.Column(db.Integer, default=0)
-
     subreddit_id = db.Column(db.Integer, db.ForeignKey("subreddits.id"))
     subreddit = db.relationship("Subreddit", backref=db.backref('threads', lazy='dynamic'))
 

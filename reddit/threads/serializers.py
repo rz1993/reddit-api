@@ -7,7 +7,7 @@ class CommentSchema(Schema):
     id = fields.Int()
     body = fields.Str()
     createdAt = fields.DateTime()
-    updatedAt = fields.DateTime(dump_only=True)
+    updatedAt = fields.DateTime()
     author = fields.Nested(UserSchema(only=("id", "username")))
 
 
@@ -17,14 +17,20 @@ class CommentsSchema(CommentSchema):
         return {'comments': data, 'commentCount': len(data)}
 
 
+def deserialize_sr(d):
+    print(f"====DESERIALIZING SUBREDDIT====: {d}")
+
+
 class ThreadSchema(Schema):
     id = fields.Int()
     slug = fields.Str()
     createdAt = fields.DateTime()
     updatedAt = fields.DateTime()
-    author = fields.Nested(UserSchema(only=("id", "username")), dump_only=True)
-    subreddit = fields.Function(lambda obj: obj.subreddit.name, dump_only=True)
-    body = fields.Str()
+    #author = fields.Nested(UserSchema(only=("id", "username")), dump_only=True)
+    author = fields.Function(serialize=lambda obj: obj.author.username, deserialize=lambda v: v)
+    subreddit_id = fields.Int()
+    subreddit = fields.Function(serialize=lambda obj: obj.subreddit.name, deserialize=lambda v: v)
+    #body = fields.Str()
     title = fields.Str(required=True)
     description = fields.Str(required=True)
     numComments = fields.Int(attribute='num_comments')

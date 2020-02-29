@@ -10,5 +10,6 @@ Flask-Migrate
 Flask-SQLAlchemy
 gunicorn
 marshmallow
+pika
 psycopg2
 redis
