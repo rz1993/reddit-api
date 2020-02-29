@@ -12,7 +12,7 @@ RUN apk update && apk add postgresql-dev gcc python3-dev musl-dev \
 
 COPY reddit reddit
 COPY migrations migrations
-COPY scripts scripts
+#COPY scripts scripts
 COPY tests tests
 COPY app.py config.py run.sh ./
 
