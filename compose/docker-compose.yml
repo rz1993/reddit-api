@@ -1,0 +1,70 @@
+version: '3.4'
+
+volumes:
+  postgres:
+  rabbitmq:
+
+services:
+  database:
+    image: postgres:11.4
+    container_name: reddit_db
+    volumes:
+       - postgres:/var/lib/postgresql/data:z
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=reddit_db
+    ports:
+      - 5433:5432
+
+  app:
+    build:
+      context: ..
+    container_name: reddit_app
+    image: app
+    env_file:
+      - app.env
+    depends_on:
+      - database
+      - object_cache
+      - list_cache
+      - event_queue
+    ports:
+      - 5000:5000
+
+  cache_writer:
+    image: app
+    depends_on:
+      - app
+      - event_queue
+      - object_cache
+      - list_cache
+    env_file:
+      - app.env
+    command: flask run-consumer thread
+
+  object_cache:
+    image: redis
+    container_name: reddit_object_cache
+    expose:
+      - 6379
+
+  list_cache:
+    image: redis
+    container_name: reddit_list_cache
+    expose:
+      - 6380
+
+  event_queue:
+    image: rabbitmq:3-management
+    container_name: reddit_queue
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    expose:
+      - 5672
+    volumes:
+      - rabbitmq:/var/lib/rabbitmq:z
+    ports:
+    #  - ${RABBITMQ_PORT}:5672
+      - 15672:15672

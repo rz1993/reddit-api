@@ -1,15 +1,22 @@
-# Testing via travis-ci.org
-sudo: false
-language: python
-python:
-  - 3.6
+sudo: required
 
-install: pip install -r requirements/development.txt
+services:
+  - docker
+
+env:
+  DOCKER_COMPOSE_VERSION: 1.23.2
+
+before_install:
+  - sudo rm /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
 
 before_script:
-  - export FLASK_APP="$TRAVIS_BUILD_DIR/app.py"
-  - export FLASK_DEBUG=1
-  - export FLASK_ENV=development
-  - export APP_DATABASE_URI="sqlite:///$TRAVIS_BUILD_DIR/test.db"
+  - docker-compose -f compose/docker-compose.yml up -d --build
 
-script: python -m pytest
+script:
+  - docker-compose -f compose/docker-compose.yml exec app python -m pytest
+
+after_script:
+  - docker-compose down

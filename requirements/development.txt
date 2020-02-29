@@ -1,4 +1,3 @@
-blinker
 elasticsearch
 elasticsearch-dsl
 flask

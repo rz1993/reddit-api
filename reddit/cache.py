@@ -83,6 +83,7 @@ class ObjectCache(AppCache):
             logger.info(f"Caching {val}")
             return self.backend.hmset(key, val)
         except redis.exceptions.RedisError as ex:
+            raise ex
             logger.info("Error while caching data", str(ex))
 
     def set_many(self, keys, vals):

@@ -4,11 +4,12 @@ from sqlalchemy.engine.url import URL
 
 def make_database_url():
     db_url = URL(
-        'postgres+psycopg2',
+        'postgresql+psycopg2',
         host=os.getenv('POSTGRES_HOST'),
         port=os.getenv('POSTGRES_PORT'),
         username=os.getenv('POSTGRES_USER'),
-        password=os.getenv('POSTGRES_PASSWORD')
+        password=os.getenv('POSTGRES_PASSWORD'),
+        database=os.getenv('POSTGRES_DB')
     )
     return str(db_url)
 
@@ -39,7 +40,7 @@ class Base:
 
 
 class Development(Base):
-    SQLALCHEMY_DATABASE_URI = make_database_url()
+    #SQLALCHEMY_DATABASE_URI = make_database_url()
     DEBUG                   = True
 
     #OBJECT_CACHE_HOST       = os.getenv("OBJECT_CACHE_HOST", "localhost")
@@ -58,7 +59,7 @@ class Production(Base):
 
 
 class Testing(Base):
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///test.db'
+    #SQLALCHEMY_DATABASE_URI = 'sqlite:///test.db'
     DEBUG                   = True
 
     ES_HOST                 = None

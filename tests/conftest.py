@@ -7,11 +7,25 @@ from flask import current_app
 from reddit.app import create_app
 from reddit.extensions import db
 from reddit import subreddits, threads, user, votes
+from unittest.mock import patch
 
 
 @pytest.fixture(scope='session')
 def test_client(request):
-    os.environ['FLASK_ENV'] = 'testing'
+    #os.environ['FLASK_ENV'] = 'testing'
+
+    mock_app_event_init = patch('reddit.app.event_publisher.init_app')
+    mock_db_send_event = patch('reddit.database.event_publisher.send_event')
+    mock_db_cache = patch('reddit.database.cache.set')
+
+    mock_app_event_init.start()
+    mock_db_send_event.start()
+    mock_db_cache.start()
+
+    mock_app_event_init.return_value = True
+    mock_db_send_event.return_value = True
+
+    #mock_db_cache.set = log_mock
 
     app = create_app()
     test_client = app.test_client()
@@ -71,7 +85,8 @@ def test_data(test_database):
 
     for key, models in data.items():
         for instance in models:
-            instance.save()
+            if key != 'users':
+                instance.save()
 
     yield data
 

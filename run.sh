@@ -37,4 +37,10 @@ flask db upgrade
 
 echo "Schema update successful."
 
-exec gunicorn -b :5000 --access-logfile - --error-logfile - app:app
+if [ -z "$@" ]; then
+  echo "[./run.sh] No command received. Running default gunicorn server."
+  exec gunicorn -b :5000 --access-logfile - --error-logfile - app:app
+else
+  echo "[./run.sh] Received command. Running $@"
+  exec "$@"
+fi

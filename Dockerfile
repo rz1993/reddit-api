@@ -8,10 +8,12 @@ COPY requirements requirements
 
 RUN apk update && apk add postgresql-dev gcc python3-dev musl-dev \
   && apk add --no-cache openssl-dev libffi-dev \
-  && python3 -m pip install -r requirements/production.txt
+  && python3 -m pip install -r requirements/development.txt
 
 COPY reddit reddit
 COPY migrations migrations
+COPY scripts scripts
+COPY tests tests
 COPY app.py config.py run.sh ./
 
 RUN chmod +x run.sh
